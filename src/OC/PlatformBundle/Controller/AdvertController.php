@@ -9,6 +9,8 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use  OC\PlatformBundle\Entity\Advert;
 use OC\PlatformBundle\Entity\Image;
+use OC\PlatformBundle\Form\AdvertType;
+use OC\PlatformBundle\Form\AdvertEditType;
 
 class AdvertController extends Controller
 {
@@ -28,7 +30,7 @@ class AdvertController extends Controller
   ->getManager()
   ->getRepository('OCPlatformBundle:Advert')
 ;
-    $listAdverts = $repository->findAll();
+    $listAdverts = $repository->findAll(array('published' => '1' ));
 	foreach ($listAdverts as $advert) {
   // $advert est une instance de Advert
 $advert->getContent();
@@ -64,69 +66,72 @@ $advert->getContent();
 // Fonction ajouter article
   public function addAction(Request $request)
   {
-	/*
-	// On récupère le service
-    $antispam = $this->container->get('oc_platform.antispam');
+	$advert = new Advert();
 
-    // Je pars du principe que $text contient le texte d'un message quelconque
-    $text = '...';
-    if ($antispam->isSpam($text)) {
-      throw new \Exception('Votre message a été détecté comme spam !');
-    }
-    // Ici le message n'est pas un spam 
-	*/
-  
-    // Création de l'entité Advert
-    $advert = new Advert();
-    $advert->setTitle('Recherche développeur Symfony2.');
-    $advert->setAuthor('Alexandre');
-    $advert->setContent("Nous recherchons un développeur Symfony2 débutant sur Lyon. Blabla…");
+	$form = $this->get('form.factory')->create(new AdvertType, $advert);
 
-    // Création de l'entité Image
-    $image = new Image();
-    $image->setUrl('http://sdz-upload.s3.amazonaws.com/prod/upload/job-de-reve.jpg');
-    $image->setAlt('Job de rêve');
+    // On fait le lien Requête <-> Formulaire
+    // À partir de maintenant, la variable $advert contient les valeurs entrées dans le formulaire par le visiteur
+    $form->handleRequest($request);
 
-    // On lie l'image à l'annonce
-    $advert->setImage($image);
+    // On vérifie que les valeurs entrées sont correctes
+    // (Nous verrons la validation des objets en détail dans le prochain chapitre)
+    if ($form->isValid()) {
+      // On l'enregistre notre objet $advert dans la base de données, par exemple
+      $em = $this->getDoctrine()->getManager();
+      $em->persist($advert);
+      $em->flush();
 
-    // On récupère l'EntityManager
-    $em = $this->getDoctrine()->getManager();
-
-    // Étape 1 : On « persiste » l'entité
-    $em->persist($advert);
-
-    // Étape 1 bis : si on n'avait pas défini le cascade={"persist"},
-    // on devrait persister à la main l'entité $image
-    // $em->persist($image);
-
-    // Étape 2 : On déclenche l'enregistrement
-    $em->flush();
-
-    // Reste de la méthode qu'on avait déjà écrit
-    if ($request->isMethod('POST')) {
       $request->getSession()->getFlashBag()->add('notice', 'Annonce bien enregistrée.');
+
+      // On redirige vers la page de visualisation de l'annonce nouvellement créée
       return $this->redirect($this->generateUrl('oc_platform_view', array('id' => $advert->getId())));
     }
 
-    return $this->render('OCPlatformBundle:Advert:add.html.twig');
+    // À ce stade, le formulaire n'est pas valide car :
+    // - Soit la requête est de type GET, donc le visiteur vient d'arriver sur la page et veut voir le formulaire
+    // - Soit la requête est de type POST, mais le formulaire contient des valeurs invalides, donc on l'affiche de nouveau
+    return $this->render('OCPlatformBundle:Advert:add.html.twig', array(
+      'form' => $form->createView(),
+    ));
   }
 // Fonction modification articles
   public function editAction($id, Request $request)
   {
-    // CE QUON VOIT QUAND ON EDITE UN ARTICLE
-	// SERA A REMPLACE PAR BDD
-    
-    $advert = array(
-      'title'   => 'Recherche développpeur Symfony2',
-      'id'      => $id,
-      'author'  => 'Alexandre',
-      'content' => 'Nous recherchons un développeur Symfony2 débutant sur Lyon. Blabla…',
-      'date'    => new \Datetime()
-    );
+       $em = $this->getDoctrine()->getManager();
 
+    // On récupère l'annonce $id
+    $advert = $em->getRepository('OCPlatformBundle:Advert')->find($id);
+
+    if (null === $advert) {
+      throw new NotFoundHttpException("L'annonce d'id ".$id." n'existe pas.");
+    }
+
+	$form = $this->get('form.factory')->create(new AdvertEditType, $advert);
+
+    // On fait le lien Requête <-> Formulaire
+    // À partir de maintenant, la variable $advert contient les valeurs entrées dans le formulaire par le visiteur
+    $form->handleRequest($request);
+
+    // On vérifie que les valeurs entrées sont correctes
+    // (Nous verrons la validation des objets en détail dans le prochain chapitre)
+    if ($form->isValid()) {
+      // On l'enregistre notre objet $advert dans la base de données, par exemple
+      $em = $this->getDoctrine()->getManager();
+      $em->persist($advert);
+      $em->flush();
+
+      $request->getSession()->getFlashBag()->add('notice', 'Annonce bien enregistrée.');
+
+      // On redirige vers la page de visualisation de l'annonce nouvellement créée
+      return $this->redirect($this->generateUrl('oc_platform_view', array('id' => $advert->getId())));
+    }
+
+    // À ce stade, le formulaire n'est pas valide car :
+    // - Soit la requête est de type GET, donc le visiteur vient d'arriver sur la page et veut voir le formulaire
+    // - Soit la requête est de type POST, mais le formulaire contient des valeurs invalides, donc on l'affiche de nouveau
     return $this->render('OCPlatformBundle:Advert:edit.html.twig', array(
-      'advert' => $advert
+      'form' => $form->createView(),
     ));
   }
 
@@ -166,7 +171,7 @@ $advert->getContent();
 	
   $listAdverts = $repository->findBy(
   array('published' => '1' ), // Critere
-  array('date' => 'desc'),        // Tri
+  array('id' => 'desc'),        // Tri
   3,                              // Limite
   0                               // Offset
 );
