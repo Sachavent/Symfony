@@ -22,28 +22,17 @@ class AdvertController extends Controller
       // une page d'erreur 404 (qu'on pourra personnaliser plus tard d'ailleurs)
       throw new NotFoundHttpException('Page "'.$page.'" inexistante.');
     }
-	// Notre liste d'annonce en dur
-    $listAdverts = array(
-      array(
-        'title'   => 'Recherche développpeur Symfony2',
-        'id'      => 1,
-        'author'  => 'Alexandre',
-        'content' => 'Nous recherchons un développeur Symfony2 débutant sur Lyon. Blabla…',
-        'date'    => new \Datetime()),
-      array(
-        'title'   => 'Mission de webmaster',
-        'id'      => 2,
-        'author'  => 'Hugo',
-        'content' => 'Nous recherchons un webmaster capable de maintenir notre site internet. Blabla…',
-        'date'    => new \Datetime()),
-      array(
-        'title'   => 'Offre de stage webdesigner',
-        'id'      => 3,
-        'author'  => 'Mathieu',
-        'content' => 'Nous proposons un poste pour webdesigner. Blabla…',
-        'date'    => new \Datetime())
-    );
-	
+	// liste d'articles dans la bdd	
+	$repository = $this
+  ->getDoctrine()
+  ->getManager()
+  ->getRepository('OCPlatformBundle:Advert')
+;
+    $listAdverts = $repository->findAll();
+	foreach ($listAdverts as $advert) {
+  // $advert est une instance de Advert
+$advert->getContent();
+}
     // Et modifiez le 2nd argument pour injecter notre liste
     return $this->render('OCPlatformBundle:Advert:index.html.twig', array(
       'listAdverts' => $listAdverts
@@ -169,11 +158,23 @@ class AdvertController extends Controller
   {
     // On fixe en dur une liste ici, bien entendu par la suite
     // on la récupérera depuis la BDD !
-    $listAdverts = array(
-      array('id' => 2, 'title' => 'Recherche développeur Symfony2'),
-      array('id' => 5, 'title' => 'Mission de webmaster'),
-      array('id' => 9, 'title' => 'Offre de stage webdesigner')
-    );
+	$repository = $this
+  ->getDoctrine()
+  ->getManager()
+  ->getRepository('OCPlatformBundle:Advert')
+;
+	
+  $listAdverts = $repository->findBy(
+  array('published' => '1' ), // Critere
+  array('date' => 'desc'),        // Tri
+  3,                              // Limite
+  0                               // Offset
+);
+
+foreach ($listAdverts as $advert) {
+  // $advert est une instance de Advert
+$advert->getContent();
+}
 
     return $this->render('OCPlatformBundle:Advert:menu.html.twig', array(
       // Tout l'intérêt est ici : le contrôleur passe
