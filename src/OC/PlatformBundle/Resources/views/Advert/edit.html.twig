@@ -4,9 +4,9 @@
 
 {% block body %}
 
-  <h2>Ajouter une annonce</h2>
+  <h2>Modifier un article</h2>
 
-  <h3>Formulaire d'annonce</h3>
+  <h3>Merci de remplir le formulaire</h3>
 
 <div class="well">
       {{ form_start(form, {'attr': {'class': 'form-horizontal'}}) }}
@@ -16,7 +16,7 @@
 
     <div class="form-group">
       {# Génération du label. #}
-      {{ form_label(form.title, "Titre de l'annonce", {'label_attr': {'class': 'col-sm-3 control-label'}}) }}
+      {{ form_label(form.title, "Titre de l'article", {'label_attr': {'class': 'col-sm-3 control-label'}}) }}
 
       {# Affichage des erreurs pour ce champ précis. #}
       {{ form_errors(form.title) }}
@@ -30,7 +30,7 @@
     {# Idem pour un autre champ. #}
 
     <div class="form-group">
-      {{ form_label(form.content, "Contenu de l'annonce", {'label_attr': {'class': 'col-sm-3 control-label'}}) }}
+      {{ form_label(form.content, "Contenu de l'article", {'label_attr': {'class': 'col-sm-3 control-label'}}) }}
       {{ form_errors(form.title) }}
       <div class="col-sm-4">
         {{ form_widget(form.content, {'attr': {'class': 'form-control'}}) }}
@@ -54,7 +54,7 @@
 </div>
 
   <p>
-    Attention : cette annonce sera modifiée après validation du formulaire.
+    Attention : cet article sera modifié après validation du formulaire.
   </p>
 
 {% endblock %}

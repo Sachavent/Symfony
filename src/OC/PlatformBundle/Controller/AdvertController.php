@@ -50,6 +50,7 @@ $advert->getContent();
     ;
 
     // On récupère l'entité correspondante à l'id $id
+	
     $advert = $repository->find($id);
 
     // $advert est donc une instance de OC\PlatformBundle\Entity\Advert

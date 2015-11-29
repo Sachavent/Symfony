@@ -14,30 +14,29 @@
   {% endblock %}
 </head>
 
-<body>
+<body style="background:#E6E6E6">
   <div class="container">
-    <div id="header" class="jumbotron">
-      <h1>Ma plateforme d'annonces</h1>
+    <div id="header" class="jumbotron" style="background:#A9E2F3" >
+      <h1>Esport Blog</h1>
       <p>
-        Ce projet est propulsé par Symfony2,
-        et construit grâce au MOOC OpenClassrooms et SensioLabs.
+       Pour le développement de l'Esport en France. Merci pour votre visite!
       </p>
       <p>
-        <a class="btn btn-primary btn-lg" href="http://fr.openclassrooms.com/informatique/cours/developpez-votre-site-web-avec-le-framework-symfony2">
-          Participer au MOOC »
+        <a class="btn btn-primary btn-lg" href="https://www.youtube.com/user/Vincedalee">
+          Vince »
         </a>
       </p>
     </div>
 
     <div class="row">
       <div id="menu" class="col-md-3">
-        <h3>Les annonces</h3>
+        <h3>Les articles</h3>
         <ul class="nav nav-pills nav-stacked">
           <li><a href="{{ path('oc_platform_home') }}">Accueil</a></li>
-          <li><a href="{{ path('oc_platform_add') }}">Ajouter une annonce</a></li>
+          <li><a href="{{ path('oc_platform_add') }}">Ajouter un article</a></li>
         </ul>
 
-        <h4>Dernières annonces</h4>
+        <h4>Derniers articles</h4>
         {{ render(controller("OCPlatformBundle:Advert:menu", {'limit': 3})) }}
       </div>
       <div id="content" class="col-md-9">

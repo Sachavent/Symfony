@@ -19,7 +19,7 @@ class AdvertType extends AbstractType
       ->add('title',     'text')
       ->add('author',    'text')
       ->add('content',   'textarea')
-	  ->add('image',      new ImageType())
+	  ->add('image',      new ImageType(), array('required' => false))
       ->add('save',      'submit')
     ;
 
