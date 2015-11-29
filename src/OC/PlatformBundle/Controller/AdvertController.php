@@ -1,7 +1,5 @@
 <?php
 
-// src/OC/PlatformBundle/Controller/AdvertController.php
-
 namespace OC\PlatformBundle\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
@@ -20,27 +18,27 @@ class AdvertController extends Controller
     // On ne sait pas combien de pages il y a
     // Mais on sait qu'une page doit être supérieure ou égale à 1
     if ($page < 1) {
-      // On déclenche une exception NotFoundHttpException, cela va afficher
-      // une page d'erreur 404 (qu'on pourra personnaliser plus tard d'ailleurs)
+      // s'il n'y a pas de page on affiche un message d'erreur
       throw new NotFoundHttpException('Page "'.$page.'" inexistante.');
     }
-	// liste d'articles dans la bdd	
+
 	$repository = $this
   ->getDoctrine()
   ->getManager()
   ->getRepository('OCPlatformBundle:Advert')
 ;
+		// on récupère les articles dans la bdd
     $listAdverts = $repository->findAll(array('published' => '1' ));
 	foreach ($listAdverts as $advert) {
-  // $advert est une instance de Advert
+
 $advert->getContent();
 }
-    // Et modifiez le 2nd argument pour injecter notre liste
+	// Affichage de la page
     return $this->render('OCPlatformBundle:Advert:index.html.twig', array(
       'listAdverts' => $listAdverts
     ));
   }
-// Fonction voir les annonces
+// Fonction voir les articles
   public function viewAction($id)
   {
     // On récupère le repository
@@ -53,13 +51,13 @@ $advert->getContent();
 	
     $advert = $repository->find($id);
 
-    // $advert est donc une instance de OC\PlatformBundle\Entity\Advert
-    // ou null si l'id $id  n'existe pas, d'où ce if :
+ 
+    // Cas si l'id n'existe pas
     if (null === $advert) {
       throw new NotFoundHttpException("L'annonce d'id ".$id." n'existe pas.");
     }
 
-    // Le render ne change pas, on passait avant un tableau, maintenant un objet
+    // rendu de la page
     return $this->render('OCPlatformBundle:Advert:view.html.twig', array(
       'advert' => $advert
     ));
@@ -67,31 +65,27 @@ $advert->getContent();
 // Fonction ajouter article
   public function addAction(Request $request)
   {
+  // Création d'un nouvel article
 	$advert = new Advert();
 
 	$form = $this->get('form.factory')->create(new AdvertType, $advert);
 
-    // On fait le lien Requête <-> Formulaire
-    // À partir de maintenant, la variable $advert contient les valeurs entrées dans le formulaire par le visiteur
     $form->handleRequest($request);
 
     // On vérifie que les valeurs entrées sont correctes
-    // (Nous verrons la validation des objets en détail dans le prochain chapitre)
     if ($form->isValid()) {
-      // On l'enregistre notre objet $advert dans la base de données, par exemple
+      // On enregistre notre objet $advert dans la base de données, par exemple
       $em = $this->getDoctrine()->getManager();
       $em->persist($advert);
       $em->flush();
 
       $request->getSession()->getFlashBag()->add('notice', 'Annonce bien enregistrée.');
 
-      // On redirige vers la page de visualisation de l'annonce nouvellement créée
+      // On redirige vers le nouvel article crée
       return $this->redirect($this->generateUrl('oc_platform_view', array('id' => $advert->getId())));
     }
 
-    // À ce stade, le formulaire n'est pas valide car :
-    // - Soit la requête est de type GET, donc le visiteur vient d'arriver sur la page et veut voir le formulaire
-    // - Soit la requête est de type POST, mais le formulaire contient des valeurs invalides, donc on l'affiche de nouveau
+    // À ce stade, le formulaire n'est pas valide
     return $this->render('OCPlatformBundle:Advert:add.html.twig', array(
       'form' => $form->createView(),
     ));
@@ -101,7 +95,7 @@ $advert->getContent();
   {
        $em = $this->getDoctrine()->getManager();
 
-    // On récupère l'annonce $id
+    // On récupère l'article avec l'id $id
     $advert = $em->getRepository('OCPlatformBundle:Advert')->find($id);
 
     if (null === $advert) {
@@ -110,12 +104,10 @@ $advert->getContent();
 
 	$form = $this->get('form.factory')->create(new AdvertEditType, $advert);
 
-    // On fait le lien Requête <-> Formulaire
-    // À partir de maintenant, la variable $advert contient les valeurs entrées dans le formulaire par le visiteur
     $form->handleRequest($request);
 
     // On vérifie que les valeurs entrées sont correctes
-    // (Nous verrons la validation des objets en détail dans le prochain chapitre)
+
     if ($form->isValid()) {
       // On l'enregistre notre objet $advert dans la base de données, par exemple
       $em = $this->getDoctrine()->getManager();
@@ -124,13 +116,12 @@ $advert->getContent();
 
       $request->getSession()->getFlashBag()->add('notice', 'Annonce bien enregistrée.');
 
-      // On redirige vers la page de visualisation de l'annonce nouvellement créée
+      // On redirige vers la nouvelle page
       return $this->redirect($this->generateUrl('oc_platform_view', array('id' => $advert->getId())));
     }
 
     // À ce stade, le formulaire n'est pas valide car :
-    // - Soit la requête est de type GET, donc le visiteur vient d'arriver sur la page et veut voir le formulaire
-    // - Soit la requête est de type POST, mais le formulaire contient des valeurs invalides, donc on l'affiche de nouveau
+
     return $this->render('OCPlatformBundle:Advert:edit.html.twig', array(
       'form' => $form->createView(),
     ));
@@ -138,15 +129,14 @@ $advert->getContent();
 
   public function deleteAction($id)
   {
-    // Ici, on récupérera l'annonce correspondant à $id
-
-    // Ici, on gérera la suppression de l'annonce en question
-	
+	// Fonction qui gère la suppression de l'article en question
+    // Ici, on récupérera l'article correspondant à $id	
     $em = $this->getDoctrine()->getManager();
 
-    // On récupère l'annonce $id
+    // On récupère l'article $id
     $advert = $em->getRepository('OCPlatformBundle:Advert')->find($id);
 
+	// Si l'article n'existe pas
     if (null === $advert) {
       throw new NotFoundHttpException("L'annonce d'id ".$id." n'existe pas.");
     }
@@ -162,8 +152,7 @@ $advert->getContent();
   
   public function menuAction($limit)
   {
-    // On fixe en dur une liste ici, bien entendu par la suite
-    // on la récupérera depuis la BDD !
+   // On recupere les info depuis la bdd
 	$repository = $this
   ->getDoctrine()
   ->getManager()
@@ -178,7 +167,6 @@ $advert->getContent();
 );
 
 foreach ($listAdverts as $advert) {
-  // $advert est une instance de Advert
 $advert->getContent();
 }
 
